@@ -22,8 +22,9 @@ const UIComponents = () => {
 
       {/* Overlay */}
       <div className="overlay"></div>
+ {/* Sidebar Overlay */}
+          <div className="side-overlay"></div>
 
-    
 
       {/* Scroll to Top */}
       <div className="progress-wrap">
