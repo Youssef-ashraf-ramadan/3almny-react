@@ -10981,11 +10981,7 @@ footer a {
   -ms-border-radius: 100%;
   -o-border-radius: 100%;
 }
-@media (max-width: 200px) {
-  .mobile-menu {
-    display: none;
-  }
-}
+
 .slick-list{
   overflow-x: hidden;
 }
@@ -10997,6 +10993,8 @@ footer a {
 /*********login**********/
 .login-page {
   background-image: url("../public/assets/images/bg/login-bg-2.png");
+  background-repeat: no-repeat;
+
 }
 .login-page {
   display: flex;
@@ -11035,6 +11033,10 @@ footer a {
 }
 .login-page .login-background {
   width: 100%;
+}
+.register-page{
+  height: initial;
+  padding: 50px 0;
 }
 
 /********register data page*********/
@@ -11145,4 +11147,6 @@ html,body{
     display: none;
   }
 }
-
+.change-password-tab{
+  margin-top: 30px !important;
+}

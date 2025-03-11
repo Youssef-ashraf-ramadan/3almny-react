@@ -126,7 +126,7 @@ function RegisterData(){
                     <div className="mt-3 text-center">
                       <p className="fw-light" style={{ margin: "10px 0" }}>
                         هل لديك حساب بالفعل؟{" "}
-                        <Link to="/auth/login" className="text-link fw-normal">
+                        <Link to="/login" className="text-link fw-normal">
                           تسجيل الدخول
                         </Link>
                       </p>

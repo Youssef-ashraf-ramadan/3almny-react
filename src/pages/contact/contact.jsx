@@ -1,6 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 
 function ContactPage() {
+//   const token = localStorage.getItem('token');
+// if (!token) {
+//     return <Navigate to="/auth/login" />;
+    
+// }
   return (
     <>
       <ContactPageBanner />

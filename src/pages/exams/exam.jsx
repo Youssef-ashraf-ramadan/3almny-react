@@ -1,6 +1,19 @@
-import { Link } from "react-router-dom";
-
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, Navigate } from "react-router-dom";
+import {
+  fetchAllTests,
+  fetchBySubjectTests,
+  fetchStudentTests,
+} from "../../redux/features/actions/testActions";
+import { fetchSubjects } from "../../redux/features/actions/subjectActions";
+import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 function ExamPage() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return <Navigate to="/login" />;
+  }
   return (
     <>
       <ExamBanner />
@@ -85,10 +98,41 @@ function ExamBanner() {
   );
 }
 function ExamLists() {
+  const dispatch = useDispatch();
+  const { tests, isLoading, error } = useSelector((state) => state.tests);
+
+  const { subjects } = useSelector((state) => state.subjects);
+
+  const [subjectId, setSubjectId] = useState(0);
+
+  useEffect(() => {
+    dispatch(fetchSubjects());
+  }, [dispatch]);
+
+  useEffect(() => {
+    // if (subjectId) {
+    dispatch(fetchStudentTests());
+    
+    // }
+  }, [dispatch]);
+  const parseGradeName = (gradeName) => {
+    if (!gradeName) return "";
+    try {
+      const jsonString = gradeName.match(/default\.(.*)_en/)?.[1];
+      if (jsonString) {
+        const parsedObject = JSON.parse(jsonString);
+        return parsedObject.ar || parsedObject.en || "Unknown Name";
+      }
+    } catch (error) {
+      console.error("Failed to parse grade name:", error);
+    }
+    return gradeName; // Return the original if parsing fails
+  };
+
   return (
     <section className="tutor-details py-40">
       <div className="container">
-        <div className="text-center">
+        {/* <div className="text-center">
           <div
             className="nav-tab-wrapper bg-white p-16 mb-40 d-inline-block"
             data-aos="zoom-out"
@@ -108,24 +152,40 @@ function ExamLists() {
                   role="tab"
                   aria-controls="pills-categories"
                   aria-selected="true"
+                  onChange={()=>setSubjectId(null)}
                 >
                   كل المواد
                 </button>
               </li>
-              <li className="nav-item" role="presentation">
-                <button
-                  className="nav-link rounded-pill bg-main-25 text-md fw-medium text-neutral-500 flex-center w-100 gap-8"
-                  id="pills-design-tab"
-                  data-bs-toggle="pill"
-                  data-bs-target="#pills-design"
-                  type="button"
-                  role="tab"
-                  aria-controls="pills-design"
-                  aria-selected="false"
-                >
-                  عربي
-                </button>
-              </li>
+
+
+              <ul className="nav nav-pills">
+  {isLoading && <p>جاري التحميل...</p>}
+  {error && <p className="text-danger">حدث خطأ: {error}</p>}
+  {!isLoading && !error && subjects?.data?.length > 0 ? (
+    subjects?.data?.map((subject) => (
+      <li className="nav-item" role="presentation" key={subject.id}>
+        <button
+          className="nav-link rounded-pill bg-main-25 text-md fw-medium text-neutral-500 flex-center w-100 gap-8"
+          id={`pills-${subject.id}-tab`}
+          data-bs-toggle="pill"
+          data-bs-target={`#pills-${subject.id}`}
+          type="button"
+          role="tab"
+          aria-controls={`pills-${subject.id}`}
+          aria-selected="false"
+        >
+          {subject.name}
+        </button>
+      </li>
+    ))
+  ) : (
+    <p>لا توجد مواد متاحة</p>
+  )}
+</ul>
+
+
+
               <li className="nav-item" role="presentation">
                 <button
                   className="nav-link rounded-pill bg-main-25 text-md fw-medium text-neutral-500 flex-center w-100 gap-8"
@@ -184,7 +244,7 @@ function ExamLists() {
               </li>
             </ul>
           </div>
-        </div>
+        </div> */}
 
         <div className="tab-content" id="pills-tabContent">
           <div
@@ -195,98 +255,217 @@ function ExamLists() {
             tabindex="0"
           >
             <div className="row justify-content-center gy-4">
-              <div className="col-lg-4 col-sm-6">
-                <div className="instructor-item scale-hover-item bg-white rounded-16 p-12  border border-neutral-30">
-                  <div className="rounded-12 overflow-hidden position-relative bg-dark-yellow">
-                    <a href="#" className="w-100 h-100 d-flex align-items-end">
-                      <img
-                        src="assets/images/bg/bg-course-2.png"
-                        alt="exam Image"
-                        className="scale-hover-item__img rounded-12 cover-img transition-2"
-                      />
-                    </a>
-                  </div>
-                  <div className="pt-24 position-relative">
-                    <div className="">
-                      <h4 className="mb-28 pb-24 border-bottom border-neutral-50 mb-24 border-dashed border-0">
-                        <a href="#" className="link text-line-2">
-                          اختبار الرياضيات
-                        </a>
-                      </h4>
-                      <div className="flex-between gap-8 flex-wrap mb-16">
-                        <div className="flex-align gap-8">
-                          <span className="text-neutral-700 text-2xl d-flex">
-                            <i className="ph-bold ph-lightbulb"></i>
-                          </span>
-                          <span className="text-neutral-700 text-lg fw-medium">
-                            الرياضيات
-                          </span>
-                        </div>
-                        <div className="flex-align gap-8">
-                          <span className="text-neutral-700 text-lg fw-medium">
-                            150
-                          </span>{" "}
-                          <span className="text-neutral-700 text-2xl d-flex">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="25"
-                              height="25"
-                              viewBox="0 0 25 25"
-                              fill="none"
-                            >
-                              <path
-                                d="M17.2727 2C15.2682 2 13.5023 3.16667 12.5 5C11.4977 3.16667 9.73182 2 7.72727 2C4.57727 2 2 5 2 8.66667C2 15.2778 12.5 22 12.5 22C12.5 22 23 15.3333 23 8.66667C23 5 20.4227 2 17.2727 2Z"
-                                fill="#F44336"
-                              />
-                            </svg>
-                          </span>
-                        </div>
+              {isLoading && (
+                <SkeletonTheme baseColor="lightgray">
+                  <Skeleton count={9} />
+                </SkeletonTheme>
+              )}
+              {error && <p className="text-danger">حدث خطأ: {error}</p>}
+              {!isLoading && !error ? (
+                tests?.data?.map((test) => (
+                  <div className="col-lg-4 col-sm-6" key={test.id}>
+                    <div className="instructor-item scale-hover-item bg-white rounded-16 p-12 border border-neutral-30">
+                      <div className="rounded-12 overflow-hidden position-relative bg-dark-yellow">
+                        <Link
+                          to={`/start-exam/${test.id}`}
+                          className="w-100 h-100 d-flex align-items-end"
+                        >
+                          <img
+                            src={
+                              test.image || "assets/images/bg/bg-course-2.png"
+                            }
+                            alt="exam Image"
+                            className="scale-hover-item__img rounded-12 cover-img transition-2"
+                          />
+                        </Link>
                       </div>
-                      <div className="flex-between gap-8 flex-wrap mb-16">
-                        <div className="flex-align gap-8">
-                          <span className="text-neutral-700 text-2xl d-flex">
-                            <i className="ph-bold ph-users"></i>
-                          </span>
-                          <span className="text-neutral-700 text-lg fw-medium">
-                            الصف الاول الاعدادي
-                          </span>
+                      <div className="pt-24 position-relative">
+                        <h4 className="mb-28 pb-24 border-bottom border-neutral-50 mb-24 border-dashed border-0">
+                          <Link
+                            to={`/start-exam/${test.id}`}
+                            className="link text-line-2"
+                          >
+                            {test.name}
+                          </Link>
+                        </h4>
+                        <div className="flex-between gap-8 flex-wrap mb-16">
+                          <div className="flex-align gap-8">
+                            <span className="text-neutral-700 text-2xl d-flex">
+                              <i className="ph-bold ph-lightbulb"></i>
+                            </span>
+                            <span className="text-neutral-700 text-lg fw-medium">
+                              {test?.subject?.name}
+                            </span>
+                          </div>
+                          <div className="flex-align gap-8">
+                            {/* <span className="text-neutral-700 text-lg fw-medium">
+                    {test.likes || 150}
+                  </span> */}
+                            <span className="text-neutral-700 text-2xl d-flex">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="25"
+                                height="25"
+                                viewBox="0 0 25 25"
+                                fill="none"
+                              >
+                                <path
+                                  d="M17.2727 2C15.2682 2 13.5023 3.16667 12.5 5C11.4977 3.16667 9.73182 2 7.72727 2C4.57727 2 2 5 2 8.66667C2 15.2778 12.5 22 12.5 22C12.5 22 23 15.3333 23 8.66667C23 5 20.4227 2 17.2727 2Z"
+                                  fill="#F44336"
+                                />
+                              </svg>
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex-align gap-4">
-                          <span className="text-lg text-neutral-700">4.6</span>{" "}
-                          <span className="text-2xl fw-medium text-warning-600 d-flex">
-                            <i className="ph-fill ph-star"></i>
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex-between gap-8 flex-wrap mb-16">
-                        <div className="flex-align gap-8">
-                          <span className="text-neutral-700 text-2xl d-flex">
-                            <i className="ph-bold ph-clock"></i>
-                          </span>
-                          <span className="text-neutral-700 text-lg fw-medium">
-                            مده الاختبار
-                          </span>
-                        </div>
-                        <div className="flex-align gap-8">
-                          <span className="text-neutral-700 text-lg fw-medium">
-                            ساعه
-                          </span>{" "}
-                          <span className="text-neutral-700 text-2xl d-flex"></span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="pt-24 border-top border-neutral-50 mt-28 mb-24   border-dashed border-0">
-                      <Link
-                        to="/start-exam"
-                        className="flex-align gap-8 text-main-600 justify-content-center hover-text-decoration-underline transition-1 fw-semibold"
-                      >
-                        بدآ الاختبار
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                        <div className="flex-between gap-8 flex-wrap mb-16">
+                          <div className="flex-align gap-8">
+                            <span className="text-neutral-700 text-2xl d-flex">
+                              <i className="ph-bold ph-users"></i>
+                            </span>
+                            <span className="text-neutral-700 text-lg fw-medium">
+                            {parseGradeName(test?.grade?.name)}
+                            </span>
+                          </div>
 
+                        </div>
+                        <div className="flex-between gap-8 flex-wrap mb-16">
+                          <div className="flex-align gap-8">
+                            <span className="text-2xl fw-medium text-warning-600  d-flex">
+                              <i className="ph-fill ph-star"></i>{" "}
+                            </span>
+                            <span className="text-neutral-700 text-lg fw-medium">
+                               التقييم
+                            </span>
+                          </div>
+                          <div className="flex-align gap-8">
+                            <span className="text-neutral-700 text-lg fw-medium">
+                            {test.rating || "4.6"}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex-between gap-8 flex-wrap mb-16">
+                          <div className="flex-align gap-8">
+                            <span className="text-neutral-700 text-2xl d-flex">
+                              <i className="ph-bold ph-clock"></i>
+                            </span>
+                            <span className="text-neutral-700 text-lg fw-medium">
+                              مده الاختبار
+                            </span>
+                          </div>
+                          <div className="flex-align gap-8">
+                            <span className="text-neutral-700 text-lg fw-medium">
+                                   {test.deadline}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="pt-24 border-top border-neutral-50 mt-28 mb-24 border-dashed border-0">
+                          <Link
+                            to={`/start-exam/${test.id}`}
+                            className="flex-align gap-8 text-main-600 justify-content-center hover-text-decoration-underline transition-1 fw-semibold"
+                          >
+                            بدآ الاختبار
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p>لا توجد اختبارات متاحة</p>
+              )}
+
+              {/* <div className="col-lg-4 col-sm-6">
+                <div className="instructor-item scale-hover-item bg-white rounded-16 p-12  border border-neutral-30">
+                  <div className="rounded-12 overflow-hidden position-relative bg-dark-yellow">
+                    <a href="#" className="w-100 h-100 d-flex align-items-end">
+                      <img
+                        src="assets/images/bg/bg-course-2.png"
+                        alt="exam Image"
+                        className="scale-hover-item__img rounded-12 cover-img transition-2"
+                      />
+                    </a>
+                  </div>
+                  <div className="pt-24 position-relative">
+                    <div className="">
+                      <h4 className="mb-28 pb-24 border-bottom border-neutral-50 mb-24 border-dashed border-0">
+                        <a href="#" className="link text-line-2">
+                          اختبار الرياضيات
+                        </a>
+                      </h4>
+                      <div className="flex-between gap-8 flex-wrap mb-16">
+                        <div className="flex-align gap-8">
+                          <span className="text-neutral-700 text-2xl d-flex">
+                            <i className="ph-bold ph-lightbulb"></i>
+                          </span>
+                          <span className="text-neutral-700 text-lg fw-medium">
+                            الرياضيات
+                          </span>
+                        </div>
+                        <div className="flex-align gap-8">
+                          <span className="text-neutral-700 text-lg fw-medium">
+                            150
+                          </span>{" "}
+                          <span className="text-neutral-700 text-2xl d-flex">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="25"
+                              height="25"
+                              viewBox="0 0 25 25"
+                              fill="none"
+                            >
+                              <path
+                                d="M17.2727 2C15.2682 2 13.5023 3.16667 12.5 5C11.4977 3.16667 9.73182 2 7.72727 2C4.57727 2 2 5 2 8.66667C2 15.2778 12.5 22 12.5 22C12.5 22 23 15.3333 23 8.66667C23 5 20.4227 2 17.2727 2Z"
+                                fill="#F44336"
+                              />
+                            </svg>
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex-between gap-8 flex-wrap mb-16">
+                        <div className="flex-align gap-8">
+                          <span className="text-neutral-700 text-2xl d-flex">
+                            <i className="ph-bold ph-users"></i>
+                          </span>
+                          <span className="text-neutral-700 text-lg fw-medium">
+                            الصف الاول الاعدادي
+                          </span>
+                        </div>
+                        <div className="flex-align gap-4">
+                          <span className="text-lg text-neutral-700">4.6</span>{" "}
+                          <span className="text-2xl fw-medium text-warning-600 d-flex">
+                            <i className="ph-fill ph-star"></i>
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex-between gap-8 flex-wrap mb-16">
+                        <div className="flex-align gap-8">
+                          <span className="text-neutral-700 text-2xl d-flex">
+                            <i className="ph-bold ph-clock"></i>
+                          </span>
+                          <span className="text-neutral-700 text-lg fw-medium">
+                            مده الاختبار
+                          </span>
+                        </div>
+                        <div className="flex-align gap-8">
+                          <span className="text-neutral-700 text-lg fw-medium">
+                            ساعه
+                          </span>{" "}
+                          <span className="text-neutral-700 text-2xl d-flex"></span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="pt-24 border-top border-neutral-50 mt-28 mb-24   border-dashed border-0">
+                      <Link
+                        to="/start-exam"
+                        className="flex-align gap-8 text-main-600 justify-content-center hover-text-decoration-underline transition-1 fw-semibold"
+                      >
+                        بدآ الاختبار
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div> */}
+              {/*
               <div className="col-lg-4 col-sm-6">
                 <div className="instructor-item scale-hover-item bg-white rounded-16 p-12  border border-neutral-30">
                   <div className="rounded-12 overflow-hidden position-relative bg-dark-yellow">
@@ -377,98 +556,7 @@ function ExamLists() {
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="col-lg-4 col-sm-6">
-                <div className="instructor-item scale-hover-item bg-white rounded-16 p-12  border border-neutral-30">
-                  <div className="rounded-12 overflow-hidden position-relative bg-dark-yellow">
-                    <a href="#" className="w-100 h-100 d-flex align-items-end">
-                      <img
-                        src="assets/images/bg/bg-course-2.png"
-                        alt="exam Image"
-                        className="scale-hover-item__img rounded-12 cover-img transition-2"
-                      />
-                    </a>
-                  </div>
-                  <div className="pt-24 position-relative">
-                    <div className="">
-                      <h4 className="mb-28 pb-24 border-bottom border-neutral-50 mb-24 border-dashed border-0">
-                        <a href="#" className="link text-line-2">
-                          اختبار الرياضيات
-                        </a>
-                      </h4>
-                      <div className="flex-between gap-8 flex-wrap mb-16">
-                        <div className="flex-align gap-8">
-                          <span className="text-neutral-700 text-2xl d-flex">
-                            <i className="ph-bold ph-lightbulb"></i>
-                          </span>
-                          <span className="text-neutral-700 text-lg fw-medium">
-                            الرياضيات
-                          </span>
-                        </div>
-                        <div className="flex-align gap-8">
-                          <span className="text-neutral-700 text-lg fw-medium">
-                            150
-                          </span>{" "}
-                          <span className="text-neutral-700 text-2xl d-flex">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="25"
-                              height="25"
-                              viewBox="0 0 25 25"
-                              fill="none"
-                            >
-                              <path
-                                d="M17.2727 2C15.2682 2 13.5023 3.16667 12.5 5C11.4977 3.16667 9.73182 2 7.72727 2C4.57727 2 2 5 2 8.66667C2 15.2778 12.5 22 12.5 22C12.5 22 23 15.3333 23 8.66667C23 5 20.4227 2 17.2727 2Z"
-                                fill="#F44336"
-                              />
-                            </svg>
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex-between gap-8 flex-wrap mb-16">
-                        <div className="flex-align gap-8">
-                          <span className="text-neutral-700 text-2xl d-flex">
-                            <i className="ph-bold ph-users"></i>
-                          </span>
-                          <span className="text-neutral-700 text-lg fw-medium">
-                            الصف الاول الاعدادي
-                          </span>
-                        </div>
-                        <div className="flex-align gap-4">
-                          <span className="text-lg text-neutral-700">4.6</span>{" "}
-                          <span className="text-2xl fw-medium text-warning-600 d-flex">
-                            <i className="ph-fill ph-star"></i>
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex-between gap-8 flex-wrap mb-16">
-                        <div className="flex-align gap-8">
-                          <span className="text-neutral-700 text-2xl d-flex">
-                            <i className="ph-bold ph-clock"></i>
-                          </span>
-                          <span className="text-neutral-700 text-lg fw-medium">
-                            مده الاختبار
-                          </span>
-                        </div>
-                        <div className="flex-align gap-8">
-                          <span className="text-neutral-700 text-lg fw-medium">
-                            ساعه
-                          </span>{" "}
-                          <span className="text-neutral-700 text-2xl d-flex"></span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="pt-24 border-top border-neutral-50 mt-28 mb-24   border-dashed border-0">
-                      <Link
-                        to="/start-exam"
-                        className="flex-align gap-8 text-main-600 justify-content-center hover-text-decoration-underline transition-1 fw-semibold"
-                      >
-                        بدآ الاختبار
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              </div> */}
             </div>
           </div>
           <div

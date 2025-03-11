@@ -1,6 +1,19 @@
-import { Link } from "react-router-dom";
-
+import { useEffect } from "react";
+import { Link, Navigate } from "react-router-dom";
+import { fetchNotifications } from "../../redux/features/actions/notificationActions";
+import { useDispatch, useSelector } from "react-redux";
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css'
 function NotificationPage() {
+  const token = localStorage.getItem('token');
+
+
+if (!token) {
+    return <Navigate to="/login" />;
+    
+}
+
+
   return (
     <>
       <NotificationBanner />
@@ -52,7 +65,7 @@ function NotificationBanner() {
                   <ul className="breadcrumb__list d-flex align-items-center justify-content-center gap-4">
                     <li className="breadcrumb__item">
                       <Link
-                        to="/index.html"
+                        to="/"
                         className="breadcrumb__link text-neutral-500 hover-text-main-600 fw-medium"
                       >
                         <i className="text-lg d-inline-flex ph-bold ph-house"></i>{" "}
@@ -85,29 +98,48 @@ function NotificationBanner() {
       );
 }
 function NotificationDetails(){
+  const dispatch = useDispatch();
+  const { notifications, isLoading, error } = useSelector((state) => state.notifications);
+  
+  useEffect(()=>{
+   dispatch(fetchNotifications())
+  },[dispatch])
+
+
     return  <section className="tutor-details py-40">
     <div className="container">
       <div className="row gy-4">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <div key={index} className="col-lg-4 col-12">
-            <div
-              className="notification-card"
-              style={{ backgroundColor: "#F5F5F5", padding: "20px" }}
-            >
-              <h1 className="fs-4">اشعار من استاذ محمد</h1>
-              <p style={{ lineHeight: "2.0" }}>
-                مرحبًا! هل أنت مستعد لاستكشاف عالم الأرقام؟ 🧮 لا تفوّت درس
-                الرياضيات الأول للصف الأول الإعدادي: 'مقدمة إلى الأعداد والجمع'.
-                انضم الآن وابدأ رحلتك نحو التفوق! 🚀
-              </p>
-              <div className="notification-footer d-flex justify-content-end mt-24">
-                <span>
-                  5:00 <i className="ph-bold ph-clock"></i>
-                </span>
-              </div>
-            </div>
-          </div>
-        ))}
+
+
+      {isLoading ? (
+  <SkeletonTheme baseColor="lightgray">
+    <Skeleton count={9} />
+  </SkeletonTheme>
+) : error ? (
+  <p>Error: {error.message}</p>
+) : notifications?.data?.length > 0 ? (
+  notifications?.data?.map((notification) => (
+    <div key={notification.id} className="col-lg-4 col-12">
+      <div
+        className="notification-card"
+        style={{ backgroundColor: "#F5F5F5", padding: "20px" }}
+      >
+        <h1 className="fs-4">{notification.title}</h1>
+        <p style={{ lineHeight: "2.0" }}>
+        {notification.message}
+        </p>
+        <div className="notification-footer d-flex justify-content-end mt-24">
+          <span>
+          {notification.created_at} <i className="ph-bold ph-clock"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+  ))
+) : (
+  <p>No notifications available.</p>
+)}
+
       </div>
     </div>
   </section>

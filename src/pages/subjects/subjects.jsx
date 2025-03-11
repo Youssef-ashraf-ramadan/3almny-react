@@ -1,6 +1,16 @@
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
 
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, Navigate } from "react-router-dom";
+import { fetchSubjects } from './../../redux/features/actions/subjectActions';
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css'
 function SubjectsPage (){
+  const token = localStorage.getItem('token');
+if (!token) {
+    return <Navigate to="/login" />;
+    
+}
     return <>
     <SubjectsBanner />
     <SubjectsLists />
@@ -83,6 +93,19 @@ function SubjectsBanner (){
 }
 
 function SubjectsLists() {
+
+
+  const dispatch = useDispatch();
+  const { subjects, isLoading, error } = useSelector((state) => state.subjects);
+  console.log(subjects);
+          const [currentPage, setCurrentPage] = useState(1);
+          const [totalPages, setTotalPages] = useState(1);
+  useEffect(() => {
+    dispatch(fetchSubjects(currentPage));
+  }, [dispatch,currentPage]);
+
+
+
     return (
       <section className="instructor py-40 position-relative z-1">
         <div className="container">
@@ -91,12 +114,26 @@ function SubjectsLists() {
             <p>يمكنك الان الاطلاع علي كل المواد وعرض الحصص الخاصه بكل ماده</p>
           </div>
           <div className="row gy-4">
+
+ {isLoading ? (
+    <SkeletonTheme baseColor="lightgray" >
+    
+      <Skeleton count={9} />
+    
+  </SkeletonTheme>
+) : error ? (
+    <p>Error: {error.message}</p>
+) : (
+  subjects?.data?.map((subject) => (
+
+
+
             <div className="col-lg-4 col-sm-6">
               <div className="instructor-item scale-hover-item bg-white rounded-16 p-12 h-100 border border-neutral-30">
                 <div className="rounded-12 overflow-hidden position-relative bg-dark-yellow">
                   <Link to="#" className="w-100 h-100 d-flex align-items-end">
                     <img
-                      src="assets/images/bg/subject.png"
+                      src={subject.image }
                       alt="Course Image"
                       className="scale-hover-item__img rounded-12 cover-img transition-2"
                     />
@@ -105,8 +142,8 @@ function SubjectsLists() {
                 <div className="p-24 position-relative">
                   <div>
                     <h4 className="mb-28 pb-24 border-bottom border-neutral-50 mb-24 border-dashed border-0">
-                      <Link to="#" className="link text-line-2">
-                        الرياضيات
+                      <Link to={`/subject/${subject.id}`} className="link text-line-2">
+                      { subject.name }
                       </Link>
                     </h4>
                     <div className="flex-between gap-8 flex-wrap">
@@ -115,14 +152,14 @@ function SubjectsLists() {
                           <i className="ph-bold ph-users"></i>
                         </span>
                         <span className="text-neutral-700 text-lg fw-medium">
-                          الصف الاول الاعدادي
+                        { subject.description }
                         </span>
                       </div>
                     </div>
                   </div>
                   <div className="pt-24 border-top border-neutral-50 mt-28 border-dashed border-0">
                     <Link
-                        to="/courses"
+                        to={`/lessons/${subject.id}`}
                       className="flex-align gap-8 text-main-600 hover-text-decoration-underline transition-1 fw-semibold"
                       tabIndex="0"
                     >
@@ -132,7 +169,12 @@ function SubjectsLists() {
                 </div>
               </div>
             </div>
-            <div className="col-lg-4 col-sm-6">
+  ))
+)}
+
+
+
+            {/* <div className="col-lg-4 col-sm-6">
               <div className="instructor-item scale-hover-item bg-white rounded-16 p-12 h-100 border border-neutral-30">
                 <div className="rounded-12 overflow-hidden position-relative bg-dark-yellow">
                   <Link to="#" className="w-100 h-100 d-flex align-items-end">
@@ -213,59 +255,36 @@ function SubjectsLists() {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
   
-          <ul className="pagination mt-40 flex-align gap-12 flex-wrap justify-content-center">
-            <li className="page-item">
-              <Link
-                to="#"
-                className="page-link text-neutral-700 fw-semibold w-40 h-40 bg-main-25 rounded-circle hover-bg-main-600 border-neutral-30 hover-border-main-600 hover-text-white flex-center p-0"
-              >
-                <i className="ph-bold ph-caret-right"></i>
-              </Link>
-            </li>
-            <li className="page-item">
-              <Link
-                to="#"
-                className="page-link text-neutral-700 fw-semibold w-40 h-40 bg-main-25 rounded-circle hover-bg-main-600 border-neutral-30 hover-border-main-600 hover-text-white flex-center p-0"
-              >
-                1
-              </Link>
-            </li>
-            <li className="page-item">
-              <Link
-                to="#"
-                className="page-link text-neutral-700 fw-semibold w-40 h-40 bg-main-25 rounded-circle hover-bg-main-600 border-neutral-30 hover-border-main-600 hover-text-white flex-center p-0"
-              >
-                2
-              </Link>
-            </li>
-            <li className="page-item">
-              <Link
-                to="#"
-                className="page-link text-neutral-700 fw-semibold w-40 h-40 bg-main-25 rounded-circle hover-bg-main-600 border-neutral-30 hover-border-main-600 hover-text-white flex-center p-0"
-              >
-                3
-              </Link>
-            </li>
-            <li className="page-item">
-              <Link
-                to="#"
-                className="page-link text-neutral-700 fw-semibold w-40 h-40 bg-main-25 rounded-circle hover-bg-main-600 border-neutral-30 hover-border-main-600 hover-text-white flex-center p-0"
-              >
-                ...
-              </Link>
-            </li>
-            <li className="page-item">
-              <Link
-                to="#"
-                className="page-link text-neutral-700 fw-semibold w-40 h-40 bg-main-25 rounded-circle hover-bg-main-600 border-neutral-30 hover-border-main-600 hover-text-white flex-center p-0"
-              >
-                <i className="ph-bold ph-caret-left"></i>
-              </Link>
-            </li>
-          </ul>
+          <nav>
+                <ul className="pagination justify-content-center mt-5">
+                    <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                        <button 
+                            className="page-link"
+                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                        >
+                            Previous
+                        </button>
+                    </li>
+
+                    <li className="page-item active">
+                        <span className="page-link">Page {currentPage} of {totalPages}</span>
+                    </li>
+
+                    <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                        <button 
+                            className="page-link"
+                            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next
+                        </button>
+                    </li>
+                </ul>
+            </nav>
         </div>
       </section>
     );

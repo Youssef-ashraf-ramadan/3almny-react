@@ -14,17 +14,16 @@ const UIComponents = () => {
   return (
     <>
       {/* Preloader */}
-      {isLoading && (
+       {isLoading && (
         <div className="preloader">
-          <img src="assets/images/icons/preloader.gif" alt="Loading..." />
+          <img src="/assets/images/icons/preloader.gif" alt="Loading..." />
         </div>
-      )}
+      )} 
 
-      {/* Overlay */}
-      <div className="overlay"></div>
- {/* Sidebar Overlay */}
-          <div className="side-overlay"></div>
 
+
+      {/* Sidebar Overlay */}
+      <div className="side-overlay"></div>
 
       {/* Scroll to Top */}
       <div className="progress-wrap">

@@ -1,6 +1,15 @@
-import { Link } from "react-router-dom";
-
+import { Link, Navigate } from "react-router-dom";
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from "react";
+import { addQuestion, fetchFaq } from "../../redux/features/actions/faqAction";
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css'
 function QuestionAnswerPage(){
+  const token = localStorage.getItem('token');
+  if (!token) {
+      return <Navigate to="/login" />;
+      
+  }
     return <>
     <QuestionAnswerBanner />
     <QuestionAnswerDetails />
@@ -78,38 +87,94 @@ function QuestionAnswerBanner(){
       );
 }
 function QuestionAnswerDetails(){
+
+    const dispatch = useDispatch();
+
+  const { faqs,ans, isLoading, error } = useSelector((state) => state.faq);
+
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  
+  useEffect(() => {
+    dispatch(fetchFaq(currentPage));
+  }, [dispatch,currentPage,ans]);
+
+
+
+
+
+  const [formData, setFormData] = useState({
+    title: "",
+    body:""
+  });
+
+const handleChange = (e) => {
+  setFormData({ ...formData, [e.target.name]: e.target.value });
+};
+
+const handleSubmit = (e) => {
+  e.preventDefault();
+
+  if (!formData.title.trim()) {
+    alert("يرجى إدخال السؤال.");
+    return;
+  }
+
+
+  if (!formData.body.trim()) {
+    alert("يرجى إدخال الإجابة.");
+    return;
+  }
+
+  dispatch(addQuestion({ title: formData.title, body: formData.body,   }));
+  setFormData({ ...formData, title: "",body:"" });
+};
+  
+
+
+
     return  <section className="tutor-details py-40">
     <div className="container">
       <div className="row gy-4 justify-content-center">
-        {[...Array(3)].map((_, index) => (
-          <div className="col-lg-4 col-12" key={index}>
-            <div
-              className="faq-card"
-              style={{ backgroundColor: "#F5F5F5", padding: "20px" }}
-            >
-              <h1 className="fs-4 text-center">علي مازن</h1>
-              <p className="fs-5" style={{ lineHeight: "2.0" }}>
-                كم حاصل ضرب 5 * 5 ؟
-              </p>
-              <div
-                className="faq-answer my-24 p-8"
-                style={{ backgroundColor: "#6886d2" }}
-              >
-                <Link
-                  to="/answer"
-                  className="text-white d-flex align-items-center gap-10"
-                >
-                  عرض الاجابه <i className="ph-bold ph-arrow-left"></i>
-                </Link>
-              </div>
-              <div className="faq-footer d-flex justify-content-end mt-24">
-                <span>
-                  5:00 <i className="ph-bold ph-clock"></i>
-                </span>
-              </div>
-            </div>
-          </div>
-        ))}
+
+      {isLoading ? (
+  <SkeletonTheme baseColor="lightgray">
+    <Skeleton count={9} />
+  </SkeletonTheme>
+) : error ? (
+  <p>Error: {error.message}</p>
+) : (
+  faqs?.data?.map((faq, index) => (
+    <div className="col-lg-4 col-12" key={index}>
+      <div
+        className="faq-card"
+        style={{ backgroundColor: "#F5F5F5", padding: "20px" }}
+      >
+        <h1 className="fs-4 text-center">{faq?.user?.name}</h1>
+        <p className="fs-5" style={{ lineHeight: "2.0" }}>
+          {faq.title}
+        </p>
+        <div
+          className="faq-answer my-24 p-8"
+          style={{ backgroundColor: "#6886d2" }}
+        >
+          <Link
+            to={`/faq/${faq.id}`}
+            className="text-white d-flex align-items-center gap-10"
+          >
+            عرض الاجابه <i className="ph-bold ph-arrow-left"></i>
+          </Link>
+        </div>
+        {/* <div className="faq-footer d-flex justify-content-end mt-24">
+          <span>
+            5:00 <i className="ph-bold ph-clock"></i>
+          </span>
+        </div> */}
+      </div>
+    </div>
+  ))
+)}
 
         {/* Button to Open Modal */}
         <div className="col-12">
@@ -122,7 +187,33 @@ function QuestionAnswerDetails(){
             اضافه سؤال
           </button>
         </div>
+        <nav>
+                <ul className="pagination justify-content-center">
+                    <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                        <button 
+                            className="page-link"
+                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                        >
+                            Previous
+                        </button>
+                    </li>
 
+                    <li className="page-item active">
+                        <span className="page-link">Page {currentPage} of {totalPages}</span>
+                    </li>
+
+                    <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                        <button 
+                            className="page-link"
+                            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next
+                        </button>
+                    </li>
+                </ul>
+            </nav>
         {/* Modal */}
         <div
           className="modal fade"
@@ -145,7 +236,7 @@ function QuestionAnswerDetails(){
                 ></button>
               </div>
               <div className="modal-body">
-                <form>
+                <form onSubmit={handleSubmit}>
                   {/* Question Input */}
                   <div className="mb-3">
                     <label htmlFor="name" className="form-label">
@@ -155,7 +246,11 @@ function QuestionAnswerDetails(){
                       type="text"
                       id="question-name"
                       className="form-control"
-                      placeholder="أدخل اسمك"
+                      placeholder="أدخل السؤال"
+                      value={formData.title}
+                      onChange={handleChange}
+                      name="title"
+
                       required
                     />
                   </div>
@@ -167,18 +262,29 @@ function QuestionAnswerDetails(){
                     <input
                       type="text"
                       id="question"
+                      value={formData.body}
+                      onChange={handleChange}
+                      name="body"
                       className="form-control"
-                      placeholder="أدخل السؤال"
+                      placeholder="أدخل الأجابة"
                       required
                     />
                   </div>
+                  <div className="modal-footer">
+              {error && <p className="text-red-500 mt-2">{error}</p>}
+
+              <button
+          type="submit"
+          className="btn btn-main rounded-pill flex-center gap-8 mt-40"
+          disabled={isLoading}
+        >
+          {isLoading ? "جاري الإرسال..." : "ارسال"}
+          <i className="ph-bold ph-arrow-up-left d-flex text-lg"></i>
+        </button>
+              </div>
                 </form>
               </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-primary w-100">
-                  حفظ
-                </button>
-              </div>
+
             </div>
           </div>
         </div>

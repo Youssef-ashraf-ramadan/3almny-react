@@ -1,7 +1,38 @@
 import { useEffect, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation,useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 
-function MobileNav() {
+
+function Navbar() {
+  const location = useLocation();
+  const [currentPath, setCurrentPath] = useState("");
+const navigate = useNavigate();
+const token = localStorage.getItem("token"); 
+console.log(token);
+
+
+const handleLogout = () => {
+  localStorage.removeItem("token"); // مسح التوكن من التخزين المحلي
+  window.location.href="/"
+  // navigate("/auth/login"); // إعادة توجيه المستخدم لصفحة تسجيل الدخول
+};
+  useEffect(() => {
+    // Normalize the pathname (remove trailing slash if needed)
+    let path = location.pathname;
+    if (path !== "/" && path.endsWith("/")) {
+      path = path.slice(0, -1);
+    }
+    setCurrentPath(path);
+  }, [location.pathname]);
+
+  return (
+    <>
+      <MobileNav handleLogout = {handleLogout} token={token} />
+      <DesktopNav handleLogout = {handleLogout} token ={token} currentPath = {currentPath} />
+    </>
+  );
+}
+function MobileNav({handleLogout, token}) {
   return (
     <div className="mobile-menu scroll-sm d-lg-none">
       <button type="button" className="close-button">
@@ -9,7 +40,7 @@ function MobileNav() {
       </button>
       <div className="mobile-menu__inner">
         <NavLink to="index.html" className="mobile-menu__logo">
-          <img src="assets/images/logo/3lmny.png" alt="Logo" />
+          <img src="/assets/images/logo/3lmny.png" alt="Logo" />
         </NavLink>
         <div className="mobile-menu__menu">
           <ul className="nav-menu flex-align nav-menu--mobile">
@@ -50,74 +81,72 @@ function MobileNav() {
             </li>
           </ul>
         </div>
-        <div className="header-right d-block d-lg-none flex-align header-mobile-right">
-          <NavLink to="/auth/login" className="login-nav-btn">
-            تسجيل الدخول
-          </NavLink>
-        </div>
-        <div className="header-right d-block d-lg-none flex-align header-mobile-right">
-          <div className="dropdown">
-            <NavLink
-              className="dropdown-toggle login-nav-btn"
-              type="button"
-              id="dropdownMenuButton"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              حسابي
-            </NavLink>
-            <ul
-              className="dropdown-menu mt-12 w-100"
-              aria-labelledby="dropdownMenuButton"
-            >
-              <li>
+
+        {
+            !token ? (
+              <div className="header-right d-block d-lg-none flex-align header-mobile-right">
+              <NavLink to="/login" className="login-nav-btn">
+                تسجيل الدخول
+              </NavLink>
+            </div>
+            ):(
+              <div className="header-right d-block d-lg-none header-mobile-right  flex-align ">
+              <div className="dropdown">
                 <NavLink
-                  className="dropdown-item"
-                  style={{ textAlign: "right" }}
-                  to="/profile"
+                  className="dropdown-toggle login-nav-btn"
+                  type="button"
+                  id="dropdownMenuButton"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
                 >
-                  الملف الشخصي
+                  حسابي
                 </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  className="dropdown-item"
-                  style={{ textAlign: "right" }}
-                  to="/notification"
+                <ul
+                  className="dropdown-menu mt-12 w-100"
+                  aria-labelledby="dropdownMenuButton"
                 >
-                  الاشعارات
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  className="dropdown-item"
-                  style={{ textAlign: "right" }}
-                  to="/"
-                >
-                  تسجيل الخروج
-                </NavLink>
-              </li>
-            </ul>
-          </div>
-        </div>
+                  <li>
+                    <NavLink
+                      className="dropdown-item"
+                      style={{ textAlign: "right" }}
+                      to="/profile"
+                    >
+                      الملف الشخصي
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      className="dropdown-item"
+                      style={{ textAlign: "right" }}
+                      to="/notification"
+                    >
+                      الاشعارات
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      className="dropdown-item"
+                      style={{ textAlign: "right" }}
+                      to="/"
+                      onClick={handleLogout}
+                    >
+                      تسجيل الخروج
+                    </NavLink>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            )
+
+          }
+        
       </div>
     </div>
   );
 }
 
 
-function DesktopNav() {
-  const location = useLocation();
-  const [currentPath, setCurrentPath] = useState("");
-
-  useEffect(() => {
-    // Normalize the pathname (remove trailing slash if needed)
-    let path = location.pathname;
-    if (path !== "/" && path.endsWith("/")) {
-      path = path.slice(0, -1);
-    }
-    setCurrentPath(path);
-  }, [location.pathname]);
+function DesktopNav({handleLogout, token, currentPath}) {
 
   return (
     <header className="header">
@@ -126,7 +155,7 @@ function DesktopNav() {
           <div className="header-content-wrapper flex-align">
             <div className="logo">
               <NavLink to="/" className="link">
-                <img src="assets/images/logo/3lmny.png" alt="Logo" />
+                <img src="/assets/images/logo/3lmny.png" alt="Logo" />
               </NavLink>
             </div>
           </div>
@@ -169,11 +198,64 @@ function DesktopNav() {
               </li>
             </ul>
           </div>
-          <div className="header-right d-lg-block d-none flex-align">
-            <NavLink to="/auth/login" className="login-nav-btn">
-              تسجيل الدخول
-            </NavLink>
-          </div>
+          {
+            !token ? (
+              <div className="header-right d-lg-block d-none flex-align">
+              <NavLink to="/login" className="login-nav-btn">
+                تسجيل الدخول
+              </NavLink>
+            </div>
+            ):(
+              <div className="header-right d-none d-lg-block  flex-align ">
+              <div className="dropdown">
+                <NavLink
+                  className="dropdown-toggle login-nav-btn"
+                  type="button"
+                  id="dropdownMenuButton"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  حسابي
+                </NavLink>
+                <ul
+                  className="dropdown-menu mt-12 w-100"
+                  aria-labelledby="dropdownMenuButton"
+                >
+                  <li>
+                    <NavLink
+                      className="dropdown-item"
+                      style={{ textAlign: "right" }}
+                      to="/profile"
+                    >
+                      الملف الشخصي
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      className="dropdown-item"
+                      style={{ textAlign: "right" }}
+                      to="/notification"
+                    >
+                      الاشعارات
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      className="dropdown-item"
+                      style={{ textAlign: "right" }}
+                      to="/"
+                      onClick={handleLogout}
+                    >
+                      تسجيل الخروج
+                    </NavLink>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            )
+
+          }
+         
 
           <div className="header-right d-lg-none d-block flex-align">
             <button type="button" className="toggle-mobileMenu d-lg-none text-neutral-200 flex-center">
@@ -183,14 +265,6 @@ function DesktopNav() {
         </nav>
       </div>
     </header>
-  );
-}
-function Navbar() {
-  return (
-    <>
-      <MobileNav />
-      <DesktopNav />
-    </>
   );
 }
 

@@ -3,7 +3,7 @@ import Navbar from "./components/navbar/Navbar";
 import { useEffect } from "react";
 import Aos from "aos";
 import "aos/dist/aos.css";
-
+import "react-toastify/dist/ReactToastify.css";
 
 import Home from "./pages/home/home";
 import UIComponents from "./components/UiComponent/Uicomponent";
@@ -22,6 +22,8 @@ import RegisterData from "./pages/RegisterData/RegisterData";
 import Login from "./pages/login/login";
 import ProfilePage from "./pages/profile/profile";
 import NotificationPage from "./pages/Notification/Notification";
+import LessonsOnePage from "./pages/lessons/LessonsOnePage";
+import TeacherLessons from './pages/teachers/TeacherLessons';
 
 
 
@@ -33,14 +35,21 @@ function AppLayout() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/lessons" element={<LessonsPage />} />
+
+        <Route path="/lessons/:id" element={<LessonsOnePage />} />
+
+
+        <Route path="/lessons/teacher/:id" element={<TeacherLessons />} />
+
+
         <Route path="/teachers" element={<Teachers />} />
         <Route path="/subjects" element={<SubjectsPage />} />
         <Route path="/exam" element={<ExamPage />} />
-        <Route path="/course-details" element={<CourseDetailsPage />} />
+        <Route path="/course-details/:id" element={<CourseDetailsPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/faq" element={<QuestionAnswerPage />} />
-        <Route path="/answer" element={<AnswersPages />} />
-        <Route path="/start-exam" element={<StartExamPage />} />
+        <Route path="/faq/:id" element={<AnswersPages />} />
+        <Route path="/start-exam/:id" element={<StartExamPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/notification" element={<NotificationPage />} />
 
@@ -63,19 +72,23 @@ function AuthLayout() {
 function App() {
   useEffect(() => {
     Aos.init({
-      duration:1000,
+      duration: 1000,
       once: true,
     });
   }, []);
+  
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/*" element={<AppLayout />} />
-        <Route path="/auth/*" element={<AuthLayout />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/register-data" element={<RegisterData />} />
       </Routes>
     </BrowserRouter>
   );
 }
+
 
 
 export default App;

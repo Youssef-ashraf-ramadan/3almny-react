@@ -1,7 +1,22 @@
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { fetchSettings } from "../../redux/features/actions/settingAction";
 
 
 function Footer() {
+  const dispatch = useDispatch();
+
+  const { settings, isLoading, error } = useSelector((state) => state.settings);
+
+
+      useEffect(() => {
+        dispatch(fetchSettings());
+      }, [dispatch]);
+      console.log(settings);
+      
+
+
   return (
     <footer className="footer position-relative z-1">
       <img src="assets/images/shapes/shape2.png" alt="" className="shape five animation-scalation" />
@@ -12,7 +27,7 @@ function Footer() {
           <div className="row gy-5 justify-content-between">
             <div className="col-lg-5 col-12 col-md-5" data-aos="fade-up" data-aos-duration="400">
               <div className="footer-item">
-                <img src="assets/images/logo/3lmny.png" alt="علمني لوجو" />
+                <img src="/assets/images/logo/3lmny.png" alt="علمني لوجو" />
                 <p className="footer-para">
                   أكاديميتنا العملية تهدف إلى تزويد المتعلمين بالمهارات العملية والتطبيقية التي تؤهلهم لسوق العمل من
                   خلال برامج تدريبية متطورة وتجربة تعليمية تفاعلية.
@@ -42,17 +57,17 @@ function Footer() {
                 <h4 className="footer-item__title fw-medium mb-32">الصفحات</h4>
                 <ul className="footer-menu">
                   <li className="mb-16">
-                    <Link to="/index" className="hover-text-main-600 hover-text-decoration-underline">
+                    <Link to="/" className="hover-text-main-600 hover-text-decoration-underline">
                       الرئيسيه
                     </Link>
                   </li>
                   <li className="mb-16">
-                    <Link to="/courses" className="hover-text-main-600 hover-text-decoration-underline">
+                    <Link to="/lessons" className="hover-text-main-600 hover-text-decoration-underline">
                       الحصص
                     </Link>
                   </li>
                   <li className="mb-16">
-                    <Link to="/instructor" className="hover-text-main-600 hover-text-decoration-underline">
+                    <Link to="/teachers" className="hover-text-main-600 hover-text-decoration-underline">
                       المدرسين
                     </Link>
                   </li>
@@ -83,12 +98,16 @@ function Footer() {
                     <i className="ph ph-phone"></i>
                   </span>
                   <div>
-                    <Link to="https://wa.me/01028372837" className="d-block hover-text-main-600 mb-4">
-                      (207) 555-0119
+                  {!isLoading? (
+                    <Link to={`https://wa.me/${settings?.data?.support_phone}`} className="d-block hover-text-main-600 mb-4">
+                   
+                    {settings?.data?.support_phone}
+
                     </Link>
-                    <Link to="https://wa.me/01028372837" className="d-block hover-text-main-600 mb-0">
+                    ):null}
+                    {/* <Link to="https://wa.me/01028372837" className="d-block hover-text-main-600 mb-0">
                       (704) 555-0127
-                    </Link>
+                    </Link> */}
                   </div>
                 </div>
                 <div className="flex-align gap-20 mb-24">
